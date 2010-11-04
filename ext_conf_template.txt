@@ -1,2 +1,2 @@
-# cat=basic; type=string; label=excludeList: List of elements to be excluded from the cHash
-excludeList=
+# cat=basic; type=string; label=excludeArguments: List of elements to be excluded from the cHash
+excludeArguments=

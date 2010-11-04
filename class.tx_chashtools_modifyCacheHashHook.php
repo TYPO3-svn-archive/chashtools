@@ -22,6 +22,8 @@
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
+require_once(t3lib_extMgm::extPath('chashtools') . 'class.tx_chashtools.php');
+
 /**
  * Hook to modify the cHash.
  *
@@ -31,7 +33,7 @@ class tx_chashtools_modifyCacheHashHook {
 	/**
 	 * @var array
 	 */
-	protected $configuration;
+	protected $excludeArguments;
 
 	/**
 	 * Processes the hook.
@@ -41,47 +43,44 @@ class tx_chashtools_modifyCacheHashHook {
 	 * @see t3lib_div::cHashParams
 	 */
 	public function process(array $parameters) {
-		$excludeArguments = t3lib_div::trimExplode(',', $this->getExcludeList(), TRUE);
-
-		foreach ($excludeArguments as $excludeArgument) {
+		foreach ($this->getExcludeArguments() as $excludeArgument) {
 			$excludeParts = explode('=', $excludeArgument, 2);
+			$arguments = &$parameters['pA'];
 
-			if (isset($parameters['pA'][$excludeParts[0]]) && (!isset($excludeParts[1]) || $parameters['pA'][$excludeParts[0]] == $excludeParts[1])) {
-				unset($parameters['pA'][$excludeParts[0]]);
+				// If the argument is a real value:
+			if (isset($arguments[$excludeParts[0]])) {
+				if (!isset($excludeParts[1]) || (string)$arguments[$excludeParts[0]] === $excludeParts[1]) {
+					unset($arguments[$excludeParts[0]]);
+				}
+				// If the argument is set to NULL:
+			} elseif ($excludeParts[1] === '') {
+				unset($arguments[$excludeParts[0]]);
 			}
 		}
 	}
 
 	/**
-	 * Gets the extension configuration.
+	 * Gets the exclude arguments.
 	 *
 	 * @return array
 	 */
-	protected function getConfiguration() {
-		if (!isset($this->configuration)) {
-			$this->configuration = array();
-
-			if (isset($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['chashtools'])) {
-				$this->configuration = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['chashtools']);
-			}
+	public function getExcludeArguments() {
+		if (!isset($this->excludeArguments)) {
+			$this->setExcludeArguments(
+				tx_chashtools::getExcludeArguments()
+			);
 		}
 
-		return $this->configuration;
+		return $this->excludeArguments;
 	}
 
 	/**
-	 * Gets the exclude list from the extension configuration.
+	 * Sets the exclude arguments.
 	 *
-	 * @return string
+	 * @param array $excludeArguments
+	 * @return void
 	 */
-	protected function getExcludeList() {
-		$excludeList = '';
-
-		$configuration = $this->getConfiguration();
-		if (isset($configuration['excludeList'])) {
-			$excludeList = $configuration['excludeList'];
-		}
-
-		return $excludeList;
+	public function setExcludeArguments(array $excludeArguments) {
+		$this->excludeArguments = $excludeArguments;
 	}
 }

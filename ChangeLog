@@ -1,0 +1,5 @@
+2010-11-04  Oliver Hader  <oliver@typo3.org>
+
+	* Intial version
+	* Added feature: Added possibility for other extensions to register arguments to be excluded
+	* Tests: Added basic unit tests
